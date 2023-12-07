@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-  See wiki page
+  See the docs
 
 ## Development
 
