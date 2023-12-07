@@ -28,20 +28,22 @@ require "jisc_publications_router"
 
 **Configure the gem**
 
+The [configuration guide](#gem-configuration-options) provides detailed instructions on the various available configurations.
+
 Get the client_id and api_key for interacting with the JISC publications router web (from the JISC publications router portal)
 
 ```
 client_id = "my_client_id"
 api_key = "my_api_key"
 ```
-Configure gem to store notifications in a file (see Gem configuration options for all options)
+You'll want to add an initializer in your rails application to configure the JISC publications router client to your needs:
 
 ```
+# config/initializers/jisc_publications_router.rb
 JiscPublicationsRouter.configure do |config|
     config.client_id = client_id
     config.api_key = api_key
     config.notifications_dir = "notifications"
-    config.notifications_store_adapter = "file"
 end
 ```
 
