@@ -1,17 +1,8 @@
 # frozen_string_literal: true
 
 require "sidekiq"
-require_relative "./v4/helpers"
-
-Sidekiq.configure_client do |config|
-  # TODO: Pass configuration option from config file
-  config.redis = { url: "redis://localhost:6379/0" }
-end
-
-Sidekiq.configure_server do |config|
-  # TODO: Pass configuration option from config file
-  config.redis = { url: "redis://localhost:6379/0" }
-end
+require "down"
+require_relative "./v4/helpers/notification_helper"
 
 module JiscPublicationsRouter
   module Worker
@@ -21,17 +12,19 @@ module JiscPublicationsRouter
       include Sidekiq::Worker
       sidekiq_options queue: :notification, retry: false, backtrace: true
 
-      def perform(json_notification); end
+      def perform(notification_id, notification_path); end
 
-      def self.add_to_notification_worker(notification)
+      def self.add_to_notification_worker(notification_id, notification_path)
         Sidekiq::Client.enqueue_to "notification", NotificationWorker,
-                                   "notification" => notification.to_json
+                                   "notification_id" => notification_id,
+                                   "notification_path" => notification_path
         WORKER_LOGGER.debug("Notification #{notification['id']} added to queue")
       end
     end
 
     class NotificationContentWorker
       include Sidekiq::Worker
+      include JiscPublicationsRouter::V4::Helpers::NotificationHelper
       # TODO: set number of retries
       sidekiq_options queue: :notification_content, retry: true, backtrace: true
 
@@ -42,20 +35,23 @@ module JiscPublicationsRouter
         notification_id = msg['args'][0]
         content_link = msg['args'][1]
         title = "Notification #{notification_id}: Failed to fetch content #{content_link['url']}"
-        # create error in notifications dir if it has finished all retries.
-        _content_error_file(notification_id, content_link)
         # create a log entry
         WORKER_LOGGER.error("#{title} #{msg['class']}: #{msg['error_message']}", error: exception)
       end
 
-      def perform(notification_id, content_link)
-        nc = JiscPublicationsRouter::V4::NotificationContent.new()
-        nc.get_content(notification_id, content_link)
-      rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
-        # create error in notifications dir if it has finished all retries.
-        _content_error_file(notification_id, content_link)
-        # create a log entry
-        WORKER_LOGGER.error("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
+      def perform(notification_id, content_links)
+        content_links.each do |content_link|
+          WORKER_LOGGER.debug("Notification #{notification_id}: Retrieving #{content_link['url']}")
+          begin
+            nc = JiscPublicationsRouter::V4::NotificationContent.new()
+            nc.get_content(notification_id, content_link)
+          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
+            # create a log entry
+            WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
+            raise
+          end
+        end
+        _queue_notification(notification_id)
       end
     end
   end

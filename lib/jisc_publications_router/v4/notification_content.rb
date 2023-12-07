@@ -16,13 +16,15 @@ module JiscPublicationsRouter
 
       def get_content(notification_id, content_link)
         JiscPublicationsRouter.logger.info("Getting notification content #{notification_id}, #{content_link['url']}")
-        params = { api_key: JiscPublicationsRouter.configuration.api_key }
+        params = {
+          api_key: JiscPublicationsRouter.configuration.api_key
+        }
         # From reading SO posts, using file.join to join URI parts as opposed
         # to any of the URI methods, as this works best
         uri = URI(content_link['url'])
         uri.query = URI.encode_www_form(params)
-        tempfile = Down.download(uri)
-        # This will raise the followign exceptions if the download fails
+        tempfile = Down::NetHttp.download(uri, max_redirects: 10)
+        # This will raise the following exceptions if the download fails
         # Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
           # raise exception and fail the job. Do not retry
         # Down::ServerError, Down::ConnectionError, Down::TimeoutError, Down::TimeoutError
