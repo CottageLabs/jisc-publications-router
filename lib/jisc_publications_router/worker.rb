@@ -3,16 +3,6 @@
 require "sidekiq"
 require_relative "./v4/helpers"
 
-Sidekiq.configure_client do |config|
-  # TODO: Pass configuration option from config file
-  config.redis = { url: "redis://localhost:6379/0" }
-end
-
-Sidekiq.configure_server do |config|
-  # TODO: Pass configuration option from config file
-  config.redis = { url: "redis://localhost:6379/0" }
-end
-
 module JiscPublicationsRouter
   module Worker
     class NotificationWorker

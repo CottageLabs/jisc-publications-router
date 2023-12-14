@@ -16,7 +16,7 @@ module JiscPublicationsRouter
           when "file"
             _save_notification(response_body)
             content_links = _notification_content_links(response_body)
-            _save_content_link(response_body['id'], content_links)
+            _save_content_link(response_body['id'], content_links) if content_links.size > 0
           when "sidekiq"
             _queue_notification(response_body)
           end
@@ -164,6 +164,7 @@ module JiscPublicationsRouter
 
         def _queue_content_links(notification)
           content_links = _notification_content_links(notification)
+          return if content_links.size == 0
           JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Adding #{content_links.size} content links to queue")
           content_links.each do |content_link|
             JiscPublicationsRouter::Worker::NotificationContentWorker.

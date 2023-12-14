@@ -34,7 +34,7 @@ module JiscPublicationsRouter
   end
 
   def self.logger
-    @@logger ||= defined?(Rails) ? Rails.logger : Logger.new("log/jisc_publications_router.log")
+    @@logger ||= defined?(Rails) ? Rails.logger : Logger.new(self.configuration.log_file)
   end
 
   def self.logger=(logger)
