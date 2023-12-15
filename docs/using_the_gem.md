@@ -82,7 +82,7 @@ end
 ## Gem configuration options
 `client_id` : 
 
-* The client_id for the JISC publications router api to get list of notifications mtching matching notifications
+* The client_id for the JISC publications router API to get list of matching notifications
 * Required
 
 `api_key` : 
@@ -187,6 +187,21 @@ end
 * parameter to indicate if unpackaged content files are to be retrieved from JISC publications router
 * Optional. The default value is `false`. 
 * If set to true the unpackaged pdf files and unpakaged other files will be downloaded and saved in the notification directory.
+
+`log_file` :
+
+* parameter to pass the name of the log file along with the path. 
+* Optional. The default value is `log/jisc_publications_router.log`. 
+
+`redis_url` :
+
+* parameter to pass the URL for redis.
+* Optional. The default value is read from the environment variable `REDIS_URL`. If this is not set, the URL will default to `redis://localhost:6379/0`
+
+`redis_password` :
+
+* parameter to pass the password for redis, if used.
+* Optional. The default value is read from the environment variable `REDIS_PASSWORD`. If this is not set, it will default to an empty string.
 
 ## Workers used by the gem
 

@@ -7,7 +7,8 @@ module JiscPublicationsRouter
     attr_accessor :client_id, :api_key, :notifications_dir, :api_endpoint,
                   :retry_count, :since_id_filename, :notifications_store_options,
                   :notifications_store_adapter, :packaging_formats,
-                  :preferred_packaging_format, :retrieve_unpackaged, :log_file
+                  :preferred_packaging_format, :retrieve_unpackaged,
+                  :log_file
 
     def initialize(client_id = nil, api_key = nil, notifications_dir = nil,
                    api_endpoint = "https://pubrouter.jisc.ac.uk/api/v4",
@@ -48,7 +49,7 @@ module JiscPublicationsRouter
       validate_store_adapter(@notifications_store_adapter)
       validate_preferred_packaging_format(@preferred_packaging_format)
       create_notifications_directory
-      JiscPublicationsRouter.logger ||= defined?(Rails) ? Rails.logger : Logger.new(@log_file)
+      JiscPublicationsRouter.logger = Logger.new(@log_file) if @log_file and @log_file != "log/jisc_publications_router.log"
     end
 
     def validate_store_adapter(adapter)
