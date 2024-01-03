@@ -11,7 +11,7 @@ module JiscPublicationsRouter
       include Sidekiq::Worker
       sidekiq_options queue: :notification, retry: false, backtrace: true
 
-      def perform(json_notification); end
+      def perform(json_notification, json_content_links); end
 
       def self.add_to_notification_worker(notification)
         Sidekiq::Client.enqueue_to "notification", NotificationWorker,

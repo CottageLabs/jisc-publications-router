@@ -12,13 +12,13 @@ module JiscPublicationsRouter
         end
 
         def _save_or_queue_all_notification_data(response_body)
+          content_links = _notification_content_links(response_body)
           case @adapter
           when "file"
             _save_notification(response_body)
-            content_links = _notification_content_links(response_body)
             _save_content_link(response_body['id'], content_links) if content_links.size > 0
           when "sidekiq"
-            _queue_notification(response_body)
+            _queue_notification(response_body, content_links)
           end
         end
 
@@ -172,12 +172,12 @@ module JiscPublicationsRouter
           end
         end
 
-        def _queue_notification(notification)
+        def _queue_notification(notification, content_links)
           JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Adding notification to queue")
           # JiscPublicationsRouter::Worker::NotificationWorker.
           # add_to_notification_worker(notification)
           JiscPublicationsRouter::Worker::NotificationWorker.
-            perform_async(notification.to_json)
+            perform_async(notification.to_json, content_links.to_json)
         end
       end
     end
