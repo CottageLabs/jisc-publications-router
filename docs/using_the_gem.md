@@ -20,12 +20,6 @@
 
 ## Using the gem
 
-Require the gem in the rails console
-
-```
-require "jisc_publications_router"
-```
-
 **Configure the gem**
 
 The [configuration guide](#gem-configuration-options) provides detailed instructions on the various available configurations.
@@ -45,6 +39,20 @@ JiscPublicationsRouter.configure do |config|
     config.api_key = api_key
     config.notifications_dir = "notifications"
 end
+```
+
+### In ruby code / from the console
+
+Require the gem in the rails console
+
+```
+require "jisc_publications_router"
+```
+
+Check the configuration options supplied in the initializer are registered
+
+```
+JiscPublicationsRouter.configuration
 ```
 
 **Get list of notifications**
@@ -79,7 +87,30 @@ q.each do |job|
 end
 ```
 
+### From the rake task - Get list of all notifications
+
+You can use the rake task to get all notifications since the last run. 
+
+You'll need to add an initializer in your rails application to configure the JISC publications router client to your needs, as explained above.
+    
+**Usage**
+
+```
+rake 'jisc_publications_router:get_all_notifications -- --save_response --save_notification --get_content'
+```
+or 
+```
+rake 'jisc_publications_router:get_all_notifications -- --sr --sn --gc'
+```
+
+The arguments are optional. 
+
+* Use `--save_response` or `--sr` if you want the responses saved in the notifications directory
+* Use `--save_notification` or `--sn` if you want the notification metadata saved to the adapter
+* Use `--get_content` or `--gc` if you want the notification content retreived and saved in the notifications directory.
+
 ## Gem configuration options
+
 `client_id` : 
 
 * The client_id for the JISC publications router API to get list of matching notifications
