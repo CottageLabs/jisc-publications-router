@@ -11,10 +11,16 @@ module JiscPublicationsRouter
                     notification_id.to_s)
         end
 
-        def _save_notification_data(notification)
+        def use_notification_data(notification)
+          retrieve_content = JiscPublicationsRouter.configuration.retrieve_content
+          # Save the notification
           _save_notification(notification)
-          content_links = _notification_content_links(notification)
-          _save_content_links(notification['id'], content_links) if content_links.size > 0
+          _save_content_links(notification)
+          if retrieve_content
+            _queue_content_links(notification)
+          else
+            _queue_notification(notification['id'])
+          end
         end
 
         def _save_notification(notification)
@@ -28,10 +34,12 @@ module JiscPublicationsRouter
           _save_json(metadata_file, notification)
         end
 
-        def _save_content_links(notification_id, content_links)
-          JiscPublicationsRouter.logger.debug("Notification #{notification_id}: Saving content link")
+        def _save_content_links(notification)
+          content_links = _notification_content_links(notification)
+          return if content_links.size > 0
+          JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Saving content link")
+          notification_path = _notification_path(notification['id'])
           # create directory
-          notification_path = _notification_path(notification_id)
           FileUtils.mkdir_p(notification_path) unless File.directory? notification_path
           # save content_links
           content_link_file = File.join(notification_path, "content_links.json")

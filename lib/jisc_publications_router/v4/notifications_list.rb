@@ -89,15 +89,8 @@ module JiscPublicationsRouter
         notification_ids = _notification_ids(response_body)
         since_id = notification_ids[-1]
         _save_response(response_body) if save_response
-        retrieve_content = JiscPublicationsRouter.configuration.retrieve_content
         response_body['notifications'].each do |notification|
-          # Save the notification
-          _save_notification_data(notification)
-          if retrieve_content
-            _queue_content_links(notification)
-          else
-            _queue_notification(notification['id'])
-          end
+          use_notification_data(notification)
         end
         _save_since_id(since_id) if since_id
         JiscPublicationsRouter.logger.info("Completed getting list of notifications")

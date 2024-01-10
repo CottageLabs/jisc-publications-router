@@ -19,15 +19,7 @@ module JiscPublicationsRouter
         request = Net::HTTP::Get.new(uri)
         request["Accept"] = "application/json"
         _response, response_body = _do_request(request)
-        # save notification
-        retrieve_content = JiscPublicationsRouter.configuration.retrieve_content
-        _save_notification_data(response_body)
-        if retrieve_content
-          # notification is queued after successful download of content
-          _queue_content_links(response_body)
-        else
-          _queue_notification(notification_id)
-        end
+        use_notification_data(response_body)
         response_body
       end
     end
