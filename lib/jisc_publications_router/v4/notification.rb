@@ -23,7 +23,7 @@ module JiscPublicationsRouter
         response_body
       end
 
-      def delete_notification(notification_id)
+      def cleanup_notification_directory(notification_id)
         _delete_notification_directory(notification_id)
       end
     end
