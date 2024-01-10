@@ -11,15 +11,10 @@ module JiscPublicationsRouter
                     notification_id.to_s)
         end
 
-        def _save_or_queue_all_notification_data(response_body)
-          content_links = _notification_content_links(response_body)
-          case @adapter
-          when "file"
-            _save_notification(response_body)
-            _save_content_link(response_body['id'], content_links) if content_links.size > 0
-          when "sidekiq"
-            _queue_notification(response_body, content_links)
-          end
+        def _save_notification_data(notification)
+          _save_notification(notification)
+          content_links = _notification_content_links(notification)
+          _save_content_links(notification['id'], content_links) if content_links.size > 0
         end
 
         def _save_notification(notification)
@@ -33,14 +28,14 @@ module JiscPublicationsRouter
           _save_json(metadata_file, notification)
         end
 
-        def _save_content_link(notification_id, content_link)
+        def _save_content_links(notification_id, content_links)
           JiscPublicationsRouter.logger.debug("Notification #{notification_id}: Saving content link")
           # create directory
           notification_path = _notification_path(notification_id)
           FileUtils.mkdir_p(notification_path) unless File.directory? notification_path
           # save content_links
           content_link_file = File.join(notification_path, "content_links.json")
-          _save_json(content_link_file, content_link)
+          _save_json(content_link_file, content_links)
         end
 
         def _notification_content_links(notification)
@@ -163,21 +158,17 @@ module JiscPublicationsRouter
         end
 
         def _queue_content_links(notification)
-          content_links = _notification_content_links(notification)
-          return if content_links.size == 0
-          JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Adding #{content_links.size} content links to queue")
-          content_links.each do |content_link|
-            JiscPublicationsRouter::Worker::NotificationContentWorker.
-              perform_async(notification['id'], content_link)
-          end
+          JiscPublicationsRouter::Worker::NotificationContentWorker.
+            perform_async(notification)
         end
 
-        def _queue_notification(notification, content_links)
-          JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Adding notification to queue")
+        def _queue_notification(notification_id)
+          notification_path = _notification_path(notification_id)
+          JiscPublicationsRouter.logger.debug("Notification #{notification_id}: Adding notification to queue")
           # JiscPublicationsRouter::Worker::NotificationWorker.
-          # add_to_notification_worker(notification)
+          # add_to_notification_worker(notification_id, notification_path)
           JiscPublicationsRouter::Worker::NotificationWorker.
-            perform_async(notification.to_json, content_links.to_json)
+            perform_async(notification_id, notification_path)
         end
       end
     end

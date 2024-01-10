@@ -8,12 +8,7 @@ module JiscPublicationsRouter
     class Notification
       include ::JiscPublicationsRouter::V4::Helpers
 
-      def initialize
-        @adapter = JiscPublicationsRouter.configuration.notifications_store_adapter
-        @tries = {}
-      end
-
-      def get_notification(notification_id, save_notification: true, get_content: true)
+      def get_notification(notification_id)
         JiscPublicationsRouter.logger.info("Getting notification #{notification_id}")
         params = { api_key: JiscPublicationsRouter.configuration.api_key }
         # From reading SO posts, using file.join to join URI parts as opposed
@@ -25,8 +20,14 @@ module JiscPublicationsRouter
         request["Accept"] = "application/json"
         _response, response_body = _do_request(request)
         # save notification
-        _save_or_queue_all_notification_data(response_body) if save_notification
-        _queue_content_links(response_body) if get_content
+        retrieve_content = JiscPublicationsRouter.configuration.retrieve_content
+        _save_notification_data(response_body)
+        if retrieve_content
+          # notification is queued after successful download of content
+          _queue_content_links(response_body)
+        else
+          _queue_notification(notification_id)
+        end
         response_body
       end
     end

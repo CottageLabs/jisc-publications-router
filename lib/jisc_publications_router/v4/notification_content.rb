@@ -22,7 +22,7 @@ module JiscPublicationsRouter
         uri = URI(content_link['url'])
         uri.query = URI.encode_www_form(params)
         tempfile = Down.download(uri)
-        # This will raise the followign exceptions if the download fails
+        # This will raise the following exceptions if the download fails
         # Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
           # raise exception and fail the job. Do not retry
         # Down::ServerError, Down::ConnectionError, Down::TimeoutError, Down::TimeoutError
