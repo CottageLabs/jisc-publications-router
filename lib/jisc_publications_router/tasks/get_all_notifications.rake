@@ -8,7 +8,7 @@ namespace :jisc_publications_router do
     configure the JISC publications router client before running the rake task.
     
     Usage
-      rake 'jisc_publications_router:get_all_notifications
+      rake 'jisc_publications_router:get_all_notifications'
       rake 'jisc_publications_router:get_all_notifications -- --save_response'
       rake 'jisc_publications_router:get_all_notifications -- --sr'
 
