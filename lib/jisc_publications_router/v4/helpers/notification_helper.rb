@@ -11,7 +11,7 @@ module JiscPublicationsRouter
                     notification_id.to_s)
         end
 
-        def use_notification_data(notification)
+        def _use_notification_data(notification)
           retrieve_content = JiscPublicationsRouter.configuration.retrieve_content
           # Save the notification
           _save_notification(notification)
@@ -178,6 +178,23 @@ module JiscPublicationsRouter
           JiscPublicationsRouter::Worker::NotificationWorker.
             perform_async(notification_id, notification_path)
         end
+
+        def _delete_notification_directory(notification_id)
+          notification_path = _notification_path(notification_id)
+          return unless Dir.exists?(notification_path)
+          FileUtils.rm_r(notification_path)
+          parent = File.dirname(notification_path)
+          grand_parent = File.dirname(parent)
+          _delete_empty_directory(parent)
+          _delete_empty_directory(grand_parent)
+        end
+
+        def _delete_empty_directory(dir_name)
+          if Dir.exists?(dir_name) && (Dir.entries(dir_name) - %w[ . .. ]).empty?
+            FileUtils.rmdir(dir_name)
+          end
+        end
+
       end
     end
   end

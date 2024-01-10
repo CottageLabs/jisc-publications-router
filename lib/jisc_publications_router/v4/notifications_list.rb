@@ -90,7 +90,7 @@ module JiscPublicationsRouter
         since_id = notification_ids[-1]
         _save_response(response_body) if save_response
         response_body['notifications'].each do |notification|
-          use_notification_data(notification)
+          _use_notification_data(notification)
         end
         _save_since_id(since_id) if since_id
         JiscPublicationsRouter.logger.info("Completed getting list of notifications")

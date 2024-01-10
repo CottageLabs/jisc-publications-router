@@ -19,8 +19,12 @@ module JiscPublicationsRouter
         request = Net::HTTP::Get.new(uri)
         request["Accept"] = "application/json"
         _response, response_body = _do_request(request)
-        use_notification_data(response_body)
+        _use_notification_data(response_body)
         response_body
+      end
+
+      def delete_notification(notification_id)
+        _delete_notification_directory(notification_id)
       end
     end
   end
