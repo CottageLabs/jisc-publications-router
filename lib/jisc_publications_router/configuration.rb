@@ -6,7 +6,7 @@ module JiscPublicationsRouter
   class Configuration
     attr_accessor :client_id, :api_key, :notifications_dir, :api_endpoint,
                   :retry_count, :since_id_filename, :preferred_packaging_format,
-                  :packaging_formats, :retrieve_unpackaged, retrieve_content, :log_file
+                  :packaging_formats, :retrieve_unpackaged, :retrieve_content, :log_file
 
     def initialize(client_id = nil, api_key = nil, notifications_dir = nil,
                    api_endpoint = "https://pubrouter.jisc.ac.uk/api/v4",
