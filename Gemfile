@@ -8,5 +8,5 @@ gemspec
 gem "rake", "~> 13.0"
 gem "rspec", "~> 3.0"
 gem "rubocop", "~> 1.21", require: false
-gem "sidekiq", "5.2.8"
+gem "sidekiq", ">= 5.2.8"
 gem "down", "~> 5.0"
