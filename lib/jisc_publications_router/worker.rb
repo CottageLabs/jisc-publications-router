@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "sidekiq"
-require_relative "./v4/helpers"
 
 module JiscPublicationsRouter
   module Worker
@@ -37,9 +36,7 @@ module JiscPublicationsRouter
         WORKER_LOGGER.error("#{title} #{msg['class']}: #{msg['error_message']}", error: exception)
       end
 
-      def perform(notification)
-        notification_id = notification['id']
-        content_links = _notification_content_links(notification)
+      def perform(notification_id, content_links)
         return if content_links.size == 0
         content_links.each do |content_link|
           WORKER_LOGGER.debug("Notification #{notification_id}: Retrieving #{content_link['url']}")

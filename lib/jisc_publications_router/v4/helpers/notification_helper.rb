@@ -166,8 +166,9 @@ module JiscPublicationsRouter
         end
 
         def _queue_content_links(notification)
+          content_links = _notification_content_links(notification)
           JiscPublicationsRouter::Worker::NotificationContentWorker.
-            perform_async(notification)
+            perform_async(notification['id'], content_links)
         end
 
         def _queue_notification(notification_id)
