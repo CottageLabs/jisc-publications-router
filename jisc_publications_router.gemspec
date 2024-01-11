@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "byebug"
   spec.add_dependency "net-http-persistent"
   spec.add_dependency "rspec"
-  spec.add_dependency "sidekiq", "5.2.8"
+  spec.add_dependency "sidekiq", ">= 5.2.8"
   spec.add_dependency "webmock"
   spec.add_dependency "down", "~> 5.0"
 end
