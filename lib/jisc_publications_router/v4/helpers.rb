@@ -2,6 +2,7 @@
 
 require_relative './helpers/notification_list_helper'
 require_relative './helpers/notification_helper'
+require_relative './helpers/content_helper'
 
 module JiscPublicationsRouter
   module V4
