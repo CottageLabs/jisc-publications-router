@@ -16,7 +16,10 @@ module JiscPublicationsRouter
 
       def get_content(notification_id, content_link)
         JiscPublicationsRouter.logger.info("Getting notification content #{notification_id}, #{content_link['url']}")
-        params = { api_key: JiscPublicationsRouter.configuration.api_key }
+        params = {
+          api_key: JiscPublicationsRouter.configuration.api_key,
+          max_redirects: 5
+        }
         # From reading SO posts, using file.join to join URI parts as opposed
         # to any of the URI methods, as this works best
         uri = URI(content_link['url'])

@@ -2,6 +2,7 @@
 
 require "sidekiq"
 require "down"
+require_relative "./v4/helpers"
 
 module JiscPublicationsRouter
   module Worker
