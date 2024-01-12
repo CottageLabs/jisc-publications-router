@@ -43,7 +43,7 @@ module JiscPublicationsRouter
           begin
             nc = JiscPublicationsRouter::V4::NotificationContent.new()
             nc.get_content(notification_id, content_link)
-          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
+          rescue ::Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
             # create a log entry
             WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
             raise
