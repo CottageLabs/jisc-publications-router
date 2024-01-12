@@ -9,6 +9,7 @@ module JiscPublicationsRouter
     module Helpers
       include NotificationListHelper
       include NotificationHelper
+      include ContentHelper
 
       private
 
