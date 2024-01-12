@@ -36,7 +36,7 @@ module JiscPublicationsRouter
 
         def _save_content_links(notification)
           content_links = _notification_content_links(notification)
-          return if content_links.size > 0
+          return if content_links.size == 0
           JiscPublicationsRouter.logger.debug("Notification #{notification['id']}: Saving content link")
           notification_path = _notification_path(notification['id'])
           # create directory

@@ -4,6 +4,7 @@ require "jisc_publications_router/version"
 require "jisc_publications_router/configuration"
 require "jisc_publications_router/v4/notifications_list"
 require "jisc_publications_router/v4/notification"
+require "jisc_publications_router/v4/notification_content"
 require "jisc_publications_router/worker"
 require "jisc_publications_router/v4/helpers"
 

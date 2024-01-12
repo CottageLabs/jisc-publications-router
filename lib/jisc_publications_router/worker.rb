@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "sidekiq"
+require "down"
 
 module JiscPublicationsRouter
   module Worker
