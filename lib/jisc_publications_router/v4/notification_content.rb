@@ -17,14 +17,13 @@ module JiscPublicationsRouter
       def get_content(notification_id, content_link)
         JiscPublicationsRouter.logger.info("Getting notification content #{notification_id}, #{content_link['url']}")
         params = {
-          api_key: JiscPublicationsRouter.configuration.api_key,
-          max_redirects: 5
+          api_key: JiscPublicationsRouter.configuration.api_key
         }
         # From reading SO posts, using file.join to join URI parts as opposed
         # to any of the URI methods, as this works best
         uri = URI(content_link['url'])
         uri.query = URI.encode_www_form(params)
-        tempfile = ::Down.download(uri)
+        tempfile = ::Down.download(uri, max_redirects: 5)
         # This will raise the following exceptions if the download fails
         # Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
           # raise exception and fail the job. Do not retry
