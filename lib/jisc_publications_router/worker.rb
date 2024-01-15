@@ -24,6 +24,7 @@ module JiscPublicationsRouter
 
     class NotificationContentWorker
       include Sidekiq::Worker
+      include JiscPublicationsRouter::V4::Helpers::NotificationHelper
       # TODO: set number of retries
       sidekiq_options queue: :notification_content, retry: true, backtrace: true
 
@@ -49,6 +50,7 @@ module JiscPublicationsRouter
             # create a log entry
             WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
             raise
+            # return
           end
         end
         _queue_notification(notification_id)
