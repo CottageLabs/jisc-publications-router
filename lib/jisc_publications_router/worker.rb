@@ -40,7 +40,6 @@ module JiscPublicationsRouter
       end
 
       def perform(notification_id, content_links)
-        return if content_links.size == 0
         content_links.each do |content_link|
           WORKER_LOGGER.debug("Notification #{notification_id}: Retrieving #{content_link['url']}")
           begin
