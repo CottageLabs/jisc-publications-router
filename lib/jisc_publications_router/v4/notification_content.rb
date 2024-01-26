@@ -23,7 +23,7 @@ module JiscPublicationsRouter
         # to any of the URI methods, as this works best
         uri = URI(content_link['url'])
         uri.query = URI.encode_www_form(params)
-        tempfile = ::Down::NetHttp.download(uri, max_redirects: 10)
+        tempfile = Down::NetHttp.download(uri, max_redirects: 10)
         # This will raise the following exceptions if the download fails
         # Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
           # raise exception and fail the job. Do not retry
