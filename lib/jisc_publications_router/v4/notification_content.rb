@@ -31,6 +31,7 @@ module JiscPublicationsRouter
           # raise exception and fail the job. It should retry
         content_path = _content_path(notification_id, content_link, tempfile.original_filename)
         FileUtils.mv(tempfile.path, content_path)
+        content_path
       end
     end
   end
