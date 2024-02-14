@@ -1,5 +1,4 @@
 require "csv"
-require 'date'
 
 module JiscPublicationsRouter
   module V4
