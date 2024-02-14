@@ -15,6 +15,7 @@ module JiscPublicationsRouter
       def get_all_notifications(since: nil, since_id: nil, page_number: 1, page_size: nil,
                                 max_number_of_pages: 10000, save_response: false)
         JiscPublicationsRouter.logger.info("Starting to get all notifications")
+        csv_file = _get_csv_file_path
         since, since_id = _gather_since_or_since_id if (since.nil? || since.empty?) && (since_id.nil? || since_id.empty?)
         all_notification_ids = []
         number_of_pages = 1
@@ -32,7 +33,7 @@ module JiscPublicationsRouter
               notification_ids,
               new_since_id = get_notifications_list(since: since, since_id: since_id,
                                                     page_number: nil, page_size: page_size,
-                                                    save_response: save_response)
+                                                    save_response: save_response, csv_file: csv_file)
 
             all_notification_ids.concat(notification_ids)
           rescue StandardError => e
@@ -62,7 +63,7 @@ module JiscPublicationsRouter
       end
 
       def get_notifications_list(since: nil, since_id: nil, page_number: 1, page_size: nil,
-                                 save_response: false)
+                                 save_response: false, csv_file: nil)
         _validate_list_params(since, since_id)
         if since
           msg = "Getting list of notifications since #{since}"
@@ -88,7 +89,10 @@ module JiscPublicationsRouter
         _response, response_body = _do_request(request)
         notification_ids = _notification_ids(response_body)
         since_id = notification_ids[-1]
-        _save_response(response_body) if save_response
+        if save_response
+          _save_response(response_body)
+          _write_to_csv(response_body, csv_file)
+        end
         response_body['notifications'].each do |notification|
           _use_notification_data(notification)
         end

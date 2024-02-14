@@ -33,22 +33,27 @@ module JiscPublicationsRouter
 
       sidekiq_retries_exhausted do |msg, exception|
         notification_id = msg['args'][0]
-        content_link = msg['args'][1]
-        title = "Notification #{notification_id}: Failed to fetch content #{content_link['url']}"
+        _content_link = msg['args'][1]
+        title = "Notification #{notification_id}: Failed to fetch content"
         # create a log entry
         WORKER_LOGGER.error("#{title} #{msg['class']}: #{msg['error_message']}", error: exception)
       end
 
       def perform(notification_id, content_links)
+        downloaded_content_links = []
         content_links.each do |content_link|
           WORKER_LOGGER.debug("Notification #{notification_id}: Retrieving #{content_link['url']}")
           begin
             nc = JiscPublicationsRouter::V4::NotificationContent.new()
-            nc.get_content(notification_id, content_link)
+            content_path = nc.get_content(notification_id, content_link)
+            content_link['file_path'] = content_path
+            downloaded_content_links.append(content_link)
           rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
             # create a log entry
             WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
             raise
+          ensure
+            _write_content_links_to_file(notification_id, downloaded_content_links) if downloaded_content_links.size > 0
           end
         end
         _queue_notification(notification_id)

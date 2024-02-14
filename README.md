@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-  See [using JISC publications router gem](https://gitlab.bodleian.ox.ac.uk/ORA4/jisc-publications-router/-/blob/develop/docs/using_the_gem.md?ref_type=heads#using-jiscpublicationsrouter-gem)
+  See [using JISC publications router gem](https://github.com/CottageLabs/jisc-publications-router/blob/main/docs/using_the_gem.md#using-jiscpublicationsrouter-gem)
 
 ## Development
 
