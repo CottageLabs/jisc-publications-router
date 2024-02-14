@@ -200,6 +200,12 @@ module JiscPublicationsRouter
           end
         end
 
+        def _save_json(file_path, response_body)
+          File.open(file_path, "w") do |f|
+            f << JSON.pretty_generate(response_body)
+          end
+        end
+
       end
     end
   end

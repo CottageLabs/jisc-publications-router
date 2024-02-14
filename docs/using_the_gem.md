@@ -30,7 +30,7 @@ Get the client_id and api_key for interacting with the JISC publications router 
 client_id = "my_client_id"
 api_key = "my_api_key"
 ```
-You'll want to add an initializer in your rails application to configure the JISC publications router client
+If using Rails, add an initializer in your rails application to configure the JISC publications router client
 
 ```
 # config/initializers/jisc_publications_router.rb
