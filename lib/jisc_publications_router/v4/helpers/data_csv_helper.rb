@@ -31,7 +31,7 @@ module JiscPublicationsRouter
             'publication_date' => get_publication_date(notification),
             'journal_title' => get_journal_title(notification)
           }
-          csv_hash.merge(get_file_info(notification))
+          csv_hash = csv_hash.merge(get_file_info(notification))
           cleanup_and_flatten_hash(csv_hash)
         end
         def get_id(notification)
@@ -134,8 +134,8 @@ module JiscPublicationsRouter
         def cleanup_and_flatten_hash(csv_hash)
           new_hash = {}
           csv_hash.each do |k, v|
-            Array(v).reject!(&:empty?)
-            new_hash[k] = v.join(";") if v.any?
+            new_val = Array(v).map{|val| val.to_s}.reject(&:empty?)
+            new_hash[k] = new_val.join(";") if new_val.any?
           end
           new_hash
         end
