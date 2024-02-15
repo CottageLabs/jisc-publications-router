@@ -17,19 +17,19 @@ module JiscPublicationsRouter
 
         def _do_csv_crosswalk(notification)
           csv_hash = {
-            'id': get_id(notification),
-            'identifier_doi': get_doi(notification),
-            'identifier_issn': get_issn(notification),
-            'identifier_eissn': get_eissn(notification),
-            'title': get_title(notification),
-            'type': get_type(notification),
-            'subject': get_subject(notification),
-            'license_title': get_license_title(notification),
-            'license_url': get_license_url(notification),
-            'publication_status': get_publication_status(notification),
-            'acceptance_date': get_accepted_date(notification),
-            'publication_date': get_publication_date(notification),
-            'journal_title': get_journal_title(notification)
+            'id'=> get_id(notification),
+            'identifier_doi' => get_doi(notification),
+            'identifier_issn' => get_issn(notification),
+            'identifier_eissn' => get_eissn(notification),
+            'title' => get_title(notification),
+            'type' => get_type(notification),
+            'subject' => get_subject(notification),
+            'license_title' => get_license_title(notification),
+            'license_url' => get_license_url(notification),
+            'publication_status' => get_publication_status(notification),
+            'acceptance_date' => get_accepted_date(notification),
+            'publication_date' => get_publication_date(notification),
+            'journal_title' => get_journal_title(notification)
           }
           csv_hash.merge(get_file_info(notification))
           cleanup_and_flatten_hash(csv_hash)
@@ -84,6 +84,7 @@ module JiscPublicationsRouter
           ls.each do |lic|
             license_title << lic.fetch("title", nil)
           end
+          license_title
         end
 
         def get_license_url(notification)
@@ -93,6 +94,7 @@ module JiscPublicationsRouter
           ls.each do |lic|
             license_url << lic.fetch("url", nil)
           end
+          license_url
         end
 
         def get_publication_status(notification)
@@ -104,7 +106,7 @@ module JiscPublicationsRouter
         end
 
         def get_publication_date(notification)
-          notification.dig('metadata', 'publication_date')
+          notification.dig('metadata', 'publication_date', 'date')
         end
 
         def get_journal_title(notification)
@@ -118,9 +120,9 @@ module JiscPublicationsRouter
         def get_file_info(notification)
           content_links = _notification_content_links(notification)
           file_info= {
-            'file_formats': [],
-            'file_urls': [],
-            'number_of_files': content_links.size
+            'file_formats' => [],
+            'file_urls' => [],
+            'number_of_files' => content_links.size
           }
           content_links.each do |cl|
             file_info['file_formats'].append(cl['format'])
