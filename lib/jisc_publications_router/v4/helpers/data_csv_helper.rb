@@ -1,9 +1,12 @@
 require "csv"
+require_relative './notification_helper'
 
 module JiscPublicationsRouter
   module V4
     module Helpers
       module DataCsvHelper
+
+        include NotificationHelper
         private
 
         def csv_headers
@@ -113,7 +116,7 @@ module JiscPublicationsRouter
         end
 
         def get_file_info(notification)
-          content_links = NotificationHelper._notification_content_links(notification)
+          content_links = _notification_content_links(notification)
           file_info= {
             'file_formats': [],
             'file_urls': [],
