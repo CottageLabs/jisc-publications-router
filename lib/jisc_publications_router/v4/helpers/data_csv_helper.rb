@@ -122,7 +122,7 @@ module JiscPublicationsRouter
           file_info= {
             'file_formats' => [],
             'file_urls' => [],
-            'number_of_files' => content_links.size
+            'number_of_files' => content_links.size.to_s
           }
           content_links.each do |cl|
             file_info['file_formats'].append(cl['format'])
