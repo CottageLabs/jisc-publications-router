@@ -45,6 +45,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             dois.append(id['id']) if id.fetch('type', '') == 'doi' and id.fetch('id', nil).present?
           end
+          dois
         end
 
         def get_issn(notification)
@@ -54,6 +55,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             issns.append(id['id']) if id.fetch('type', '') == 'issn' and id.fetch('id', nil).present?
           end
+          issns
         end
 
         def get_eissn(notification)
@@ -63,6 +65,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             eissns.append(id['id']) if id.fetch('type', '') == 'eissn' and id.fetch('id', nil).present?
           end
+          eissns
         end
 
         def get_title(notification)
