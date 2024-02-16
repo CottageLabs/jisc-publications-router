@@ -29,7 +29,8 @@ module JiscPublicationsRouter
             'publication_status' => get_publication_status(notification),
             'acceptance_date' => get_accepted_date(notification),
             'publication_date' => get_publication_date(notification),
-            'journal_title' => get_journal_title(notification)
+            'journal_title' => get_journal_title(notification),
+            'article_version' => get_version(notification)
           }
           csv_hash = csv_hash.merge(get_file_info(notification))
           cleanup_and_flatten_hash(csv_hash)
@@ -117,7 +118,7 @@ module JiscPublicationsRouter
         end
 
         def get_version(notification)
-          notification.dig('metadata', 'version')
+          notification.dig('metadata', 'article', 'version')
         end
 
         def get_file_info(notification)

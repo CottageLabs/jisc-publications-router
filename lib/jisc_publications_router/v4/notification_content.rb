@@ -15,7 +15,7 @@ module JiscPublicationsRouter
       end
 
       def get_content(notification_id, content_link)
-        JiscPublicationsRouter.logger.info("Getting notification content #{notification_id}, #{content_link['url']}")
+        JiscPublicationsRouter.logger.info("#{notification_id}: Getting notification content #{content_link['url']}")
         params = {
           api_key: JiscPublicationsRouter.configuration.api_key
         }
@@ -31,6 +31,7 @@ module JiscPublicationsRouter
           # raise exception and fail the job. It should retry
         content_path = _content_path(notification_id, content_link, tempfile.original_filename)
         FileUtils.mv(tempfile.path, content_path)
+        JiscPublicationsRouter.logger.info("#{notification_id}: #{content_link['url']} saved to #{content_path}")
         content_path
       end
     end
