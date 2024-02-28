@@ -13,7 +13,7 @@ module JiscPublicationsRouter
                    retry_count = 3, since_id_filename = ".since",
                    preferred_packaging_format = "http://purl.org/net/sword/package/SimpleZip",
                    retrieve_unpackaged = false,
-                   retrieve_content =true,
+                   retrieve_content = true,
                    log_file = "log/jisc_publications_router.log",
                    redis_url = ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
                    redis_password= ENV.fetch("REDIS_PASSWORD", ""))

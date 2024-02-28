@@ -32,7 +32,11 @@ module JiscPublicationsRouter
         content_path = _content_path(notification_id, content_link, tempfile.original_filename)
         FileUtils.mv(tempfile.path, content_path)
         JiscPublicationsRouter.logger.info("#{notification_id}: #{content_link['url']} saved to #{content_path}")
-        content_path
+        _get_file_hash(content_path)
+      end
+
+      def extract_select_files_from_zip(notification_id, content_link, content_path)
+        _extract_select_files_from_zip(notification_id, content_link, content_path)
       end
     end
   end
