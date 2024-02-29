@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'zip'
-require 'mimemagic'
+require 'mini_mime'
 require 'digest'
 
 module JiscPublicationsRouter
@@ -98,19 +98,11 @@ module JiscPublicationsRouter
 
         def _get_mime_type(file_path)
           begin
-            mime_type = MimeMagic.by_magic(open(file_path))&.type
+            mime_type = MiniMime.lookup_by_filename(file_path).content_type
             ext = _file_suffix_to_mime_type_mappings.key(mime_type)
-            if ext
-              return ext
-            elsif mime_type == 'x-ole-storage'
-              # check for .doc, .xls, .ppt
-              IO.popen(["file", "--mime-type", "--brief", "#{file_path}"]) do |io|
-                ext = _file_suffix_to_mime_type_mappings.key(io.read.chomp)
-                return ext if ext
-              end
-            end
+            return ext if ext             
             return 'other'
-          rescue => ex
+          rescue => _ex
             return nil
           end
         end

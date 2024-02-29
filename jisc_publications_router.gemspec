@@ -35,5 +35,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "sidekiq", ">= 5.2.8"
   spec.add_dependency "webmock"
   spec.add_dependency "down", "~> 5.0"
-  spec.add_dependency "mimemagic","~> 0.4.3"
+  spec.add_dependency "mini_mime", "~> 1.0"
 end
