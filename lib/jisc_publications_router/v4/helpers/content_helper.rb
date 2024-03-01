@@ -86,7 +86,7 @@ module JiscPublicationsRouter
 
         def _get_file_sha1(content_path)
           file_sha1 = nil
-          file_sha1 = Digest::SHA1.file(file_path).hexdigest if File.exist?(content_path)
+          file_sha1 = Digest::SHA1.file(content_path).hexdigest if File.exist?(content_path)
           file_sha1
         end
 
@@ -96,9 +96,9 @@ module JiscPublicationsRouter
           file_size
         end
 
-        def _get_mime_type(file_path)
+        def _get_mime_type(content_path)
           begin
-            mime_type = MiniMime.lookup_by_filename(file_path).content_type
+            mime_type = MiniMime.lookup_by_filename(content_path).content_type
             ext = _file_suffix_to_mime_type_mappings.key(mime_type)
             return ext if ext             
             return 'other'
