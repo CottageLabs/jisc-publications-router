@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 #
 require "down"
+require 'cgi'
+require 'uri'
 require "json"
 require "fileutils"
 require_relative "./helpers"
@@ -16,13 +18,14 @@ module JiscPublicationsRouter
 
       def get_content(notification_id, content_link)
         JiscPublicationsRouter.logger.info("#{notification_id}: Getting notification content #{content_link['url']}")
-        params = {
-          api_key: JiscPublicationsRouter.configuration.api_key
-        }
         # From reading SO posts, using file.join to join URI parts as opposed
         # to any of the URI methods, as this works best
         uri = URI(content_link['url'])
-        uri.query = URI.encode_www_form(params)
+        if content_link.fetch('need_api_key', false)
+          params = uri.query ? CGI.parse(uri.query) : {}
+          params[:api_key] = JiscPublicationsRouter.configuration.api_key
+          uri.query = URI.encode_www_form(params)
+        end
         tempfile = Down::NetHttp.download(uri, max_redirects: 10)
         # This will raise the following exceptions if the download fails
         # Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound

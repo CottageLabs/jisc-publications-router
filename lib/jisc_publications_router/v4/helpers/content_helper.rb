@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'zip'
-require 'mini_mime'
+require 'mimemagic'
 require 'digest'
 
 module JiscPublicationsRouter
@@ -32,21 +32,29 @@ module JiscPublicationsRouter
         def _extract_select_files_from_zip(notification_id, content_link, content_path)
           selected_files = []
           if File.exist?(content_path)
-            _extract_zip_file(content_path)
-            selected_files = _select_files_from_zip(notification_id, content_link, content_path)
+            zip_dir_path = _extract_zip_file(notification_id, content_path)
+            selected_files = _select_files_from_zip(notification_id, content_link, zip_dir_path)
           end
           selected_files
         end
 
-        def _extract_zip_file(content_path)
-          # Creating a directory in the same name as zip file
-          FileUtils.mkdir_p(content_path)
+        def _extract_zip_file(notification_id, content_path)
+          zip_dir_path = _zip_dir_path(notification_id, content_path)
+          FileUtils.mkdir_p(zip_dir_path)
           Zip::File.open(content_path) do |zip_file|
             zip_file.each do |zip_entry|
-              fpath = File.join(content_path, zip_entry.name)
-              zip_file.extract(zip_entry, fpath) unless File.exist?(fpath)
+              zip_entry_path = File.join(zip_dir_path, zip_entry.name)
+              zip_file.extract(zip_entry, zip_entry_path) unless File.exist?(zip_entry_path)
             end
           end
+          zip_dir_path
+        end
+
+        def _zip_dir_path(notification_id, content_path)
+          ext = File.extname(content_path)
+          dir_name = File.basename(content_path, ext)
+          zip_dir_path = _content_path(notification_id, nil, dir_name)
+          zip_dir_path
         end
 
         def _select_files_from_zip(notification_id, content_link, content_dir)
@@ -57,7 +65,8 @@ module JiscPublicationsRouter
           return selected_files unless File.directory?(content_dir)
           Dir.glob("#{content_dir}/**/*").each do |f|
             next unless File.file?(f)
-            ext = _get_mime_type(f)
+            mime_type = _get_mime_type(f)
+            ext = _file_suffix_to_mime_type_mappings.key(mime_type)
             if ext and not ['other', 'zip'].include?(ext)
               filename_ext = File.extname(f)
               filename = File.basename(f, filename_ext)
@@ -71,9 +80,7 @@ module JiscPublicationsRouter
         end
 
         def _get_file_hash(content_path)
-          ext = _get_mime_type(content_path)
-          mime_type = nil
-          mime_type = _file_suffix_to_mime_type_mappings[ext] if _file_suffix_to_mime_type_mappings.include?(ext)
+          mime_type = _get_mime_type(content_path)
           file_hash = {
             'file_path' => content_path,
             'file_name' => File.basename(content_path),
@@ -98,13 +105,16 @@ module JiscPublicationsRouter
 
         def _get_mime_type(content_path)
           begin
-            mime_type = MiniMime.lookup_by_filename(content_path).content_type
-            ext = _file_suffix_to_mime_type_mappings.key(mime_type)
-            return ext if ext             
-            return 'other'
-          rescue => _ex
+            mime_type = MimeMagic.by_magic(open(content_path))&.type
+            if ['x-ole-storage', 'application/xhtml+xml'].include? mime_type
+              IO.popen(["file", "--mime-type", "--brief", "#{content_path}"]) do |io|
+                mime_type = io.read.chomp
+              end
+            end
+          rescue => ex
             return nil
           end
+          mime_type
         end
 
         def _file_suffix_to_mime_type_mappings
@@ -120,8 +130,8 @@ module JiscPublicationsRouter
             'rtf'  => 'application/rtf',
             'tex'  => 'application/x-tex',
             'xls'  => 'application/vnd.ms-excel',
-            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'zip'  => 'application/zip' }
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          }
         end
 
       end
