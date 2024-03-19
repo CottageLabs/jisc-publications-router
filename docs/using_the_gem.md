@@ -29,6 +29,8 @@ Get the client_id and api_key for interacting with the JISC publications router 
 ```
 client_id = "my_client_id"
 api_key = "my_api_key"
+notifications_dir = 'notifications'
+since_id_filepath = 'notifications/.since'
 ```
 If using Rails, add an initializer in your rails application to configure the JISC publications router client
 
@@ -38,6 +40,7 @@ JiscPublicationsRouter.configure do |config|
     config.client_id = client_id
     config.api_key = api_key
     config.notifications_dir = "notifications"
+    config.since_id_filepath = "notifications/.since"
 end
 ```
 
@@ -203,14 +206,15 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
 
 * The files stored in the directory are
 
-  * `.since` : File used to store the last id retrieved from the notifications API. This is then read in the next run of the API
+  * `.since` : File used to store the last id retrieved from the notifications API. This is then read in the next run of the API. 
+    Note: This is the default location of the `.since` file, and can be changed with the setting `since_id_filepath`.
 
     ```
     notifications/
     └── .since
     ```
 
-  * list of notifications in a pair tree of depth 2 (if chosen to save notifications using file adapter)
+  * Working directory to store the list of notifications in a pair tree of depth 2
 
     ```
     notifications/
@@ -239,7 +243,7 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
     │   │   │   └── notification.json
     ```
 
-  * The response_body from get list of notifications list (if chosen to save response body using file adapter)
+  * The response_body from get list of notifications list (if chosen to save response body)
 
     ```
     notifications/
@@ -249,6 +253,12 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
     ```
 
   * The content for each notification, stored within the directory for each notification,  in a pair tree of depth 2 (as shown above)
+
+`since_id_filepath` :
+
+* The filepath of the file used to store the last id retrieved from the notifications API. This is then read in the next run of the API. 
+* Optional. The default value is `{notifications_dir}/.since` 
+* NOTE: If the value of `since_id_filepath` is set to `.since`, it will be saved within the notifications directory.
 
 `api_endpoint` : 
 

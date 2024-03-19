@@ -5,8 +5,13 @@ module JiscPublicationsRouter
         private
 
         def _since_id_filepath
-          File.join(JiscPublicationsRouter.configuration.notifications_dir,
-                    JiscPublicationsRouter.configuration.since_id_filename)
+          if JiscPublicationsRouter.configuration.since_id_filepath.present? and
+             JiscPublicationsRouter.configuration.since_id_filepath != ".since"
+            path = JiscPublicationsRouter.configuration.since_id_filepath
+          else
+            path = File.join(JiscPublicationsRouter.configuration.notifications_dir, ".since")
+          end
+          path
         end
 
         def _gather_since_or_since_id
