@@ -10,9 +10,9 @@ module JiscPublicationsRouter
         private
 
         def csv_headers
-          %w[type title subject publication_status publication_date license_url license_title
-             language journal_title identifier_eissn identifier_issn identifier_doi id
-             article_version acceptance_date]
+          %w[id type title subject publication_status publication_date license_url license_title language
+             journal_title identifier_eissn identifier_issn identifier_doi article_version acceptance_date
+             number_of_files file_formats file_urls]
         end
 
         def _do_csv_crosswalk(notification)
