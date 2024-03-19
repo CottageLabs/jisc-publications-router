@@ -56,10 +56,9 @@ module JiscPublicationsRouter
                 downloaded_content_links.append(_content_file_metadata(content_link, file_from_zip))
               end
             end
-          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
-            # create a log entry
-            WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
-            raise
+          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound, Down::ClientError => error
+            # If any 400 error, do not raise error, log and continue
+            WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}. #{error.message}")
           ensure
             _write_content_links_to_file(notification_id, downloaded_content_links) if downloaded_content_links.size > 0
           end
