@@ -214,7 +214,7 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
     └── .since
     ```
 
-  * Working directory to store the list of notifications in a pair tree of depth 2
+  * list of notifications in a pair tree of depth 2 (This is a working directory to store notifications, which can then be cleaned)
 
     ```
     notifications/
