@@ -1,34 +1,39 @@
 require "csv"
+require_relative './notification_helper'
 
 module JiscPublicationsRouter
   module V4
     module Helpers
       module DataCsvHelper
+
+        include NotificationHelper
         private
 
         def csv_headers
-          %w[id identifier_doi identifier_issn identifier_eissn title type
-            subject license_title license_url publication_status acceptance_date
-            publication_date journal_title file_formats file_urls number_of_files]
+          %w[id type title subject publication_status publication_date license_url license_title language
+             journal_title identifier_eissn identifier_issn identifier_doi article_version acceptance_date
+             number_of_files file_formats file_urls]
         end
 
         def _do_csv_crosswalk(notification)
           csv_hash = {
-            'id': get_id(notification),
-            'identifier_doi': get_doi(notification),
-            'identifier_issn': get_issn(notification),
-            'identifier_eissn': get_eissn(notification),
-            'title': get_title(notification),
-            'type': get_type(notification),
-            'subject': get_subject(notification),
-            'license_title': get_license_title(notification),
-            'license_url': get_license_url(notification),
-            'publication_status': get_publication_status(notification),
-            'acceptance_date': get_accepted_date(notification),
-            'publication_date': get_publication_date(notification),
-            'journal_title': get_journal_title(notification)
+            'acceptance_date' => get_accepted_date(notification),
+            'article_version' => get_version(notification),
+            'id'=> get_id(notification),
+            'identifier_doi' => get_doi(notification),
+            'identifier_issn' => get_issn(notification),
+            'identifier_eissn' => get_eissn(notification),
+            'journal_title' => get_journal_title(notification),
+            'language' => get_language(notification),
+            'license_title' => get_license_title(notification),
+            'license_url' => get_license_url(notification),
+            'publication_date' => get_publication_date(notification),
+            'publication_status' => get_publication_status(notification),
+            'subject' => get_subject(notification),
+            'title' => get_title(notification),
+            'type' => get_type(notification),
           }
-          csv_hash.merge(get_file_info(notification))
+          csv_hash = csv_hash.merge(get_file_info(notification))
           cleanup_and_flatten_hash(csv_hash)
         end
         def get_id(notification)
@@ -42,6 +47,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             dois.append(id['id']) if id.fetch('type', '') == 'doi' and id.fetch('id', nil).present?
           end
+          dois
         end
 
         def get_issn(notification)
@@ -51,6 +57,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             issns.append(id['id']) if id.fetch('type', '') == 'issn' and id.fetch('id', nil).present?
           end
+          issns
         end
 
         def get_eissn(notification)
@@ -60,6 +67,7 @@ module JiscPublicationsRouter
           ids.each do |id|
             eissns.append(id['id']) if id.fetch('type', '') == 'eissn' and id.fetch('id', nil).present?
           end
+          eissns
         end
 
         def get_title(notification)
@@ -68,6 +76,10 @@ module JiscPublicationsRouter
 
         def get_type(notification)
           notification.dig('metadata', 'article', 'type')
+        end
+
+        def get_language(notification)
+          notification.dig('metadata', 'article', 'language')
         end
 
         def get_subject(notification)
@@ -81,6 +93,7 @@ module JiscPublicationsRouter
           ls.each do |lic|
             license_title << lic.fetch("title", nil)
           end
+          license_title
         end
 
         def get_license_url(notification)
@@ -90,6 +103,7 @@ module JiscPublicationsRouter
           ls.each do |lic|
             license_url << lic.fetch("url", nil)
           end
+          license_url
         end
 
         def get_publication_status(notification)
@@ -101,7 +115,7 @@ module JiscPublicationsRouter
         end
 
         def get_publication_date(notification)
-          notification.dig('metadata', 'publication_date')
+          notification.dig('metadata', 'publication_date', 'date')
         end
 
         def get_journal_title(notification)
@@ -109,15 +123,15 @@ module JiscPublicationsRouter
         end
 
         def get_version(notification)
-          notification.dig('metadata', 'version')
+          notification.dig('metadata', 'article', 'version')
         end
 
         def get_file_info(notification)
-          content_links = NotificationHelper._notification_content_links(notification)
+          content_links = _notification_content_links(notification)
           file_info= {
-            'file_formats': [],
-            'file_urls': [],
-            'number_of_files': content_links.size
+            'file_formats' => [],
+            'file_urls' => [],
+            'number_of_files' => content_links.size.to_s
           }
           content_links.each do |cl|
             file_info['file_formats'].append(cl['format'])
@@ -129,8 +143,8 @@ module JiscPublicationsRouter
         def cleanup_and_flatten_hash(csv_hash)
           new_hash = {}
           csv_hash.each do |k, v|
-            Array(v).reject!(&:empty?)
-            new_hash[k] = v.join(";") if v.any?
+            new_val = Array(v).map{|val| val.to_s}.reject(&:empty?)
+            new_hash[k] = new_val.join(";") if new_val.any?
           end
           new_hash
         end

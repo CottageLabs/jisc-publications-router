@@ -29,6 +29,8 @@ Get the client_id and api_key for interacting with the JISC publications router 
 ```
 client_id = "my_client_id"
 api_key = "my_api_key"
+notifications_dir = 'notifications'
+since_id_filepath = 'notifications/.since'
 ```
 If using Rails, add an initializer in your rails application to configure the JISC publications router client
 
@@ -38,6 +40,7 @@ JiscPublicationsRouter.configure do |config|
     config.client_id = client_id
     config.api_key = api_key
     config.notifications_dir = "notifications"
+    config.since_id_filepath = "notifications/.since"
 end
 ```
 
@@ -55,11 +58,15 @@ Check the configuration options supplied in the initializer are registered
 JiscPublicationsRouter.configuration
 ```
 
-**Get list of notifications**
+**Get list of notifications - *For the first time - using date (since)***
 
 ```
+# since can be a date long in the past. 
+# JISC only stores the last three months of matched notifications 
+
 nl = JiscPublicationsRouter::V4::NotificationsList.new
-response_body, notification_ids, since_id = nl.get_notifications_list(since: "2023-01-01", save_response: true)
+since = "2023-01-01" 
+response_body, notification_ids, since_id = nl.get_notifications_list(since: since, save_response: true)
 ```
 
 This method gets one page of notifications. The default page size in the JISC publications router api is 25 (maximum is 100).
@@ -67,9 +74,43 @@ This method gets one page of notifications. The default page size in the JISC pu
 Each notification is looped over, and the following actions are performed
 
 * Metadata is saved to disk
+
 * The list of contents are extracted into a file called `content_links.json`
+
 * The contents to be retrieved are added to a `notification_content` queue
+
 * After the contents have been successfully fetched, the `notification id` and `notification path` is added to the `notification` queue, as explained in the workers below.
+
+* `save_response: true` is only needed for debugging purposes. This will
+
+  * Save the http response data on disk within the notifications directory
+
+  * Create a csv file from the response data, for analysis of the data received from the publications router. The csv file is written within the response directory with the current timestamp.
+
+    If you would like all responses to be written into the same csv file, you can pass in the csv file name along with the path to csv_file.
+
+    ```
+    response_body, notification_ids, since_id = nl.get_notifications_list(since: since, save_response: true, csv_file='/data/notifications.csv')
+    ```
+
+
+**Get list of notifications - *the next set since the last run***
+
+For this, you will need to use the `since_id` obtained from the last run.
+
+If you don't have this value, you can get it using the method `
+
+```
+include JiscPublicationsRouter::V4::Helpers::NotificationListHelper
+since, since_id = _gather_since_or_since_id
+```
+
+This method will return the since_id if the `.since` file exists in your notifications directory, if not it will return a date well in the past.
+
+```
+nl = JiscPublicationsRouter::V4::NotificationsList.new
+response_body, notification_ids, since_id = nl.get_notifications_list(since_id: since_id, save_response: true)
+```
 
 **Get list of all notifications**
 
@@ -82,6 +123,9 @@ This method calls `Get list of notifications` recursively
 
 * Starting from the last id retrieved in the previous run or from "1970-01-01"
 * It retrieves either all notifications or a maximum of 10,000 calls are made (25 per page - 250,000 notifications are retrieved).
+* `save_response: true` is only needed for debugging purposes. This will
+  * Save the http response data on disk within the notifications directory
+  * Create a csv file from the response data, for analysis of the data received from the publications router. The csv file is written within the notifications directory with the current timestamp.
 
 **Get notification**
 
@@ -162,14 +206,15 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
 
 * The files stored in the directory are
 
-  * `.since` : File used to store the last id retrieved from the notifications API. This is then read in the next run of the API
+  * `.since` : File used to store the last id retrieved from the notifications API. This is then read in the next run of the API. 
+    Note: This is the default location of the `.since` file, and can be changed with the setting `since_id_filepath`.
 
     ```
     notifications/
     └── .since
     ```
 
-  * list of notifications in a pair tree of depth 2 (if chosen to save notifications using file adapter)
+  * list of notifications in a pair tree of depth 2 (This is a working directory to store notifications, which can then be cleaned)
 
     ```
     notifications/
@@ -198,7 +243,7 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
     │   │   │   └── notification.json
     ```
 
-  * The response_body from get list of notifications list (if chosen to save response body using file adapter)
+  * The response_body from get list of notifications list (if chosen to save response body)
 
     ```
     notifications/
@@ -208,6 +253,12 @@ rake 'jisc_publications_router:get_all_notifications -- --sr'
     ```
 
   * The content for each notification, stored within the directory for each notification,  in a pair tree of depth 2 (as shown above)
+
+`since_id_filepath` :
+
+* The filepath of the file used to store the last id retrieved from the notifications API. This is then read in the next run of the API. 
+* Optional. The default value is `{notifications_dir}/.since` 
+* NOTE: If the value of `since_id_filepath` is set to `.since`, it will be saved within the notifications directory.
 
 `api_endpoint` : 
 
@@ -318,7 +369,6 @@ To write your own actions to be performed after a notification has been successf
   end
   ```
   
-
 * Require that file in your application, so it overwrites your file with the one in the gem
 
   ``` 

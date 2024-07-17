@@ -45,18 +45,35 @@ module JiscPublicationsRouter
           WORKER_LOGGER.debug("Notification #{notification_id}: Retrieving #{content_link['url']}")
           begin
             nc = JiscPublicationsRouter::V4::NotificationContent.new()
-            content_path = nc.get_content(notification_id, content_link)
-            content_link['file_path'] = content_path
-            downloaded_content_links.append(content_link)
-          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound
-            # create a log entry
-            WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}")
-            raise
+            file_hash = nc.get_content(notification_id, content_link)
+            WORKER_LOGGER.debug("Notification #{notification_id}: Retrieved #{content_link['url']} to #{file_hash['file_path']}")
+            if file_hash['file_mime_type'] != 'application/zip'
+              downloaded_content_links.append(_content_file_metadata(content_link, file_hash))
+            else
+              WORKER_LOGGER.debug("Notification #{notification_id}: Extracting files from #{file_hash['file_path']}")
+              files_from_zip = nc.extract_select_files_from_zip(notification_id, content_link, file_hash['file_path'])
+              files_from_zip.each do |file_from_zip|
+                downloaded_content_links.append(_content_file_metadata(content_link, file_from_zip))
+              end
+            end
+          rescue Down::InvalidUrl, Down::TooManyRedirects, Down::NotFound, Down::ClientError => error
+            # If any 400 error, do not raise error, log and continue
+            WORKER_LOGGER.warn("Notification #{notification_id}: Failed to fetch content #{content_link['url']}. #{error.message}")
           ensure
             _write_content_links_to_file(notification_id, downloaded_content_links) if downloaded_content_links.size > 0
           end
         end
         _queue_notification(notification_id)
+      end
+
+      def _content_file_metadata(content_link, file_hash)
+        downloaded_content_link = content_link.clone
+        downloaded_content_link['original_format'] = content_link['format']
+        downloaded_content_link['file_path'] = file_hash['file_path']
+        downloaded_content_link['format'] = file_hash['file_mime_type']
+        downloaded_content_link['file_sha1'] = file_hash['file_sha1']
+        downloaded_content_link['file_size'] = file_hash['file_size']
+        downloaded_content_link
       end
     end
   end

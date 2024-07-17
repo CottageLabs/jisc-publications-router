@@ -63,7 +63,7 @@ module JiscPublicationsRouter
       end
 
       def get_notifications_list(since: nil, since_id: nil, page_number: 1, page_size: nil,
-                                 save_response: false, csv_file: nil)
+                                 save_response: false, csv_file: _get_csv_file_path)
         _validate_list_params(since, since_id)
         if since
           msg = "Getting list of notifications since #{since}"
